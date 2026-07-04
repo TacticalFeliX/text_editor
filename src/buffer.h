@@ -8,11 +8,11 @@
 
 typedef struct Buffer
 {
-    char **lines; 
-    int *line_lengths;
-    int line_count;
-    int line_capacity;
-    int modified;
+    char **lines;           /* Heap-allocated array of line strings             */
+    int   *line_lengths;    /* Cached length of each line (avoids strlen calls) */
+    int    line_count;      /* Number of lines currently stored                 */
+    int    line_capacity;   /* Number of slots currently allocated              */
+    int    modified;        /* 1 if unsaved changes exist, 0 otherwise          */
 
 } Buffer;
 
