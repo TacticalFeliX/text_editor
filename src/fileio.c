@@ -13,14 +13,14 @@
 int fileio_open(Buffer *buf, const char *filename)
 {
     FILE *fp = fopen(filename, "rb");
-    if (fp == NULL)
+    if (fp == NULL){
         return -1;
+    }
 
     buffer_clear(buf);
 
     char *chunk = malloc(READ_CHUNK_SIZE);
-    if (chunk == NULL)
-    {
+    if (chunk == NULL){
         fclose(fp);
         return -2;
     }
@@ -29,8 +29,7 @@ int fileio_open(Buffer *buf, const char *filename)
     int   line_len = 0;
     char *line_buf = malloc((size_t)line_cap);
 
-    if (line_buf == NULL)
-    {
+    if (line_buf == NULL){
         free(chunk);
         fclose(fp);
         return -2;
@@ -56,8 +55,9 @@ int fileio_open(Buffer *buf, const char *filename)
                 if (line_len + remaining >= line_cap)
                 {
                     int new_cap = line_cap;
-                    while (new_cap <= line_len + remaining)
+                    while (new_cap <= line_len + remaining){
                         new_cap *= 2;
+                    }
 
                     char *new_buf = realloc(line_buf, (size_t)new_cap);
                     if (new_buf == NULL)
@@ -82,8 +82,9 @@ int fileio_open(Buffer *buf, const char *filename)
                 if (line_len + seg_len + 1 >= line_cap)
                 {
                     int new_cap = line_cap;
-                    while (new_cap <= line_len + seg_len)
+                    while (new_cap <= line_len + seg_len){
                         new_cap *= 2;
+                    }
 
                     char *new_buf = realloc(line_buf, (size_t)new_cap);
                     if (new_buf == NULL)
@@ -100,8 +101,9 @@ int fileio_open(Buffer *buf, const char *filename)
                 memcpy(line_buf + line_len, pos, (size_t)seg_len);
                 line_len += seg_len;
 
-                if (line_len > 0 && line_buf[line_len - 1] == '\r')
+                if (line_len > 0 && line_buf[line_len - 1] == '\r'){
                     line_len--;
+                }
 
                 line_buf[line_len] = '\0';
 
@@ -164,8 +166,9 @@ int fileio_open(Buffer *buf, const char *filename)
 int fileio_save(Buffer *buf, const char *filename)
 {
     FILE *fp = fopen(filename, "wb");
-    if (fp == NULL)
+    if (fp == NULL){
         return -1;
+    }
 
     int line_count = buffer_get_line_count(buf);
     int i;
@@ -192,8 +195,9 @@ int fileio_save(Buffer *buf, const char *filename)
         }
     }
 
-    if (fclose(fp) != 0)
+    if (fclose(fp) != 0){
         return -1;
+    }
 
     buffer_set_modified(buf, 0);
 
