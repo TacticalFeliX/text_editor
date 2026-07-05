@@ -18,15 +18,14 @@ typedef struct Buffer
  */
 
 /*
-Purpose:_buf_grow_lines will ensure the lines array has room for at least 'needed' entries
-
+Purpose:
+    _buf_grow_lines will ensure the lines array has room for at least 'needed' entries
 Parameters:
     buf: the buffer to be grown
     needed: min reqd capacity
 Returns:
     0 on success
     -1 on alloc failure
-
 */
 static int _buf_grow_lines(Buffer *buf, int needed)
 {
@@ -62,8 +61,8 @@ static int _buf_grow_lines(Buffer *buf, int needed)
 }
 
 /*
-Purpose: to duplicate a string
-
+Purpose:
+    to duplicate a string
 Parameters:
     src: the source string, must not be null
     len: no of bytes to copy from src, excluding \0
@@ -82,15 +81,15 @@ static char *_strdup_len(const char *src, int len)
     return copy;
 }
 
-/*LifeCycle*/
+/*--------------------LifeCycle--------------------*/
 
 /*
-    Purpose: allocate and init an empty buffer
-
+    Purpose:
+        allocate and init an empty buffer
     Parameters:
         none
     Returns:
-    initialises 1 empty line (lines[0]=""), and makes line_count=1
+        initialises 1 empty line (lines[0]=""), and makes line_count=1
         NULL on alloc failure
 */
 Buffer *buffer_new(void)
@@ -135,8 +134,8 @@ Buffer *buffer_new(void)
 };
 
 /*
-Purpose: release all memoryowned by the buffer
-
+Purpose:
+    release all memoryowned by the buffer
 Parameters:
     buf: the buffer to be freed
 Returns:
@@ -156,69 +155,260 @@ void buffer_free(Buffer *buf)
     free(buf);
 };
 
-//char ops
-/*
-Purpose:
-
-Parameters:
-
-Returns:
-
-*/
-int buffer_insert_char(Buffer *buf, int row, int col, char c);
+/*--------------------char ops---------------------*/
 
 /*
 Purpose:
-
+    insert a char in the buffer at the correct line and position
 Parameters:
-
+    buf: the buffer under operation
+    row, col: position to insert charcater
+    c: the character to be inserted
 Returns:
-
+    0 on success
+    -1 on failure
 */
-int buffer_delete_char(Buffer *buf, int row, int col);
+int buffer_insert_char(Buffer *buf, int row, int col, char c)
+{
+    if (row <0 || row>=buf->line_count){
+        return -1;
+    }
+    if (col<0 || col> buf->line_lengths[row]){
+        return -1;
+    }
 
-//line ops
-/*
-Purpose:
+    int old_len=buf->line_lengths[row];
+    int new_len=old_len+1;
 
-Parameters:
+    /*grow the string by 1  byte*/
+    char *new_line = realloc(buf->lines[row], (size_t)(new_len+1));
+    if(new_line == NULL){return -1;}
 
-Returns:
+    buf->lines[row]=new_line;
 
-*/
-int buffer_split_line(Buffer *buf, int row, int col);
+    memmove(new_line + col + 1, new_line + col, (size_t)(old_len - col+ 1));
 
-/*
-Purpose:
-
-Parameters:
-
-Returns:
-
-*/
-int buffer_merge_lines(Buffer *buf, int row);
-
-/*
-Purpose:
-
-Parameters:
-
-Returns:
-
-*/
-int buffer_insert_line(Buffer *buf, int row, const char *text);
+    new_line[col] = c;
+    buf->line_lengths[row] = new_len;
+    buf->modified = 1;
+    return 0;
+};
 
 /*
 Purpose:
-
+    delete the char at row, col
 Parameters:
-
+    buf: the buffer under operation
+    row, col: from where to delete
 Returns:
-
+    0 on success
+    -1 on failure
 */
-int buffer_delete_line(Buffer *buf, int row);
+int buffer_delete_char(Buffer *buf, int row, int col)
+{
+    if(row<0 || row>=buf->line_count){
+        return -1;
+    }
+    if(col<0 || col>buf->line_lengths[row]){
+        return -1;
+    }
 
-//query ops
+    char *line = buf->lines[row];
+    int old_len = buf->line_lengths[row]; 
+
+    memmove(line + col, line + col + 1, (size_t)(old_len - col));
+
+    buf->line_lengths[row] = old_len -1;
+    buf->modified = 1;
+
+    return 0;
+};
+
+/*---------------------line ops---------------------*/
+
+/*
+Purpose:
+    split line 'row' at column 'col' (Enter key)
+Parameters:
+    buf
+    row,col
+Returns:
+    0, -1
+*/
+int buffer_split_line(Buffer *buf, int row, int col)
+{
+    if(row< 0 || row>=buf->line_count){
+        return -1;
+    }
+    if(col<0 || col> buf->line_lengths[row]){
+        return -1;
+    }
+
+    const char *src_line = buf->lines[row];
+    int src_len = buf->line_lengths[row];
+    int new_len = src_len - col;
+
+    char *new_line = _strdup_len(src_line + col, new_len);
+    if(new_line == NULL){
+        return -1;
+    }
+    if(_buf_grow_lines(buf, buf->line_count+1)==-1)
+    {
+        free(new_line);
+        return -1;
+    }
+
+    int lines_to_shift = buf->line_count - row - 1;
+    if(lines_to_shift>0){
+        memmove(buf->lines + row + 2, buf->lines + row + 1, (size_t)lines_to_shift* sizeof(char*));
+        memmove(buf->line_lengths + row + 2, buf->line_lengths + row + 1, (size_t)lines_to_shift* sizeof(int*));   
+    }
+
+    buf->lines[row+1] = new_line;
+    buf->line_lengths[row+1]=new_len;
+    buf->line_count++;
+
+    buf->lines[row][col]='\0';
+    buf->line_lengths[row]=col;
+
+    buf->modified=1;
+    return 0;
+
+};
+
+/*
+Purpose:
+    merge line 'row+1' onto the end of 'row' (Backspace)
+Parameters:
+    buf
+    row
+Returns:
+    0,-1
+*/
+int buffer_merge_lines(Buffer *buf, int row)
+{
+    if(row<0 || row>= buf->line_count -1){
+        return -1;
+    }
+
+    int len0 = buf->line_lengths[row];
+    int len1 = buf->line_lengths[row+1];
+    int merged = len0 + len1;
+
+    char *new_line = realloc(buf->lines[row], (size_t)(merged+1));
+
+    if(new_line==NULL){
+        return -1;
+    }
+    buf->lines[row]=new_line;
+    memcpy(new_line+len0, buf->lines[row+1], (size_t)(len1+1));
+
+    buf->line_lengths[row] = merged;
+
+    free(buf->lines[row+1]);
+
+    int lines_to_shift = buf->line_count - row - 2;
+    if(lines_to_shift > 0){
+        memmove(buf->lines + row + 1, buf->lines + row + 2, (size_t)lines_to_shift * sizeof(char*));
+        memmove(buf->line_lengths + row + 1, buf->line_lengths + row + 2, (size_t)lines_to_shift * sizeof(int));
+    }
+
+    buf->line_count--;
+    buf->modified=1;
+    return 0;
+};
+
+/*
+Purpose:
+    insert a new line at position row 
+Parameters:
+    buf
+    row
+    text
+Returns:
+    0,-1
+*/
+int buffer_insert_line(Buffer *buf, int row, const char *text)
+{
+    if (row <0 || row >buf->line_count){
+        return -1;
+    }
+    if (text ==NULL){
+        text = "";
+    }
+
+    int new_len = (int)strlen(text);
+
+    char *new_line = _strdup_len(text, new_len);
+    if (new_line ==NULL){
+        return -1;
+    }
+
+    if (_buf_grow_lines(buf, buf->line_count + 1) == -1){
+        free(new_line);
+        return -1;
+    }
+    
+    int lines_to_shift = buf->line_count - row;
+    if (lines_to_shift > 0)
+    {
+        memmove(buf->lines + row + 1, buf->lines + row, (size_t)lines_to_shift * sizeof(char *));
+        memmove(buf->line_lengths + row + 1, buf->line_lengths + row, (size_t)lines_to_shift * sizeof(int));
+    }
+
+    buf->lines[row] = new_line;
+    buf->line_lengths[row] = new_len;
+    buf->line_count++;
+    buf->modified = 1;
+
+    return 0;
+};
+
+/*
+Purpose:
+    removes the line at position 'row'
+Parameters:
+    buf
+    row
+Returns:
+    0,-1
+*/
+int buffer_delete_line(Buffer *buf, int row)
+{
+    if (row< 0 || row>= buf->line_count){
+        return -1;
+    }
+
+    if (buf->line_count == 1){
+
+        char *empty = _strdup_len("", 0);
+        if (empty ==NULL){
+            return -1;
+        }
+
+        free(buf->lines[0]);
+        buf->lines[0]        = empty;
+        buf->line_lengths[0] = 0;
+        buf->modified        = 1;
+        return 0;
+    }
+
+    free(buf->lines[row]);
+
+    
+    int lines_to_shift = buf->line_count - row - 1;
+    if (lines_to_shift > 0){
+        memmove(buf->lines + row, buf->lines + row + 1, (size_t)lines_to_shift * sizeof(char *));
+        memmove(buf->line_lengths + row, buf->line_lengths + row + 1, (size_t)lines_to_shift * sizeof(int));
+    }
+    
+    buf->line_count--;
+    buf->modified = 1;
+    return 0;
+};
+
+/*-------------------------query ops---------------------------*/
+
 /*
 Purpose:
 

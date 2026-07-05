@@ -16,7 +16,19 @@ typedef struct Buffer
 
 } Buffer;
 
-//lifecycle
+/*
+static int _buf_grow_lines(Buffer *buf, int needed){
+
+}
+*/
+
+/*
+static char *_strdup_len(const char *src, int len){
+
+}
+*/
+
+/*lifecycle*/
 
 Buffer *buffer_new(void);
 
