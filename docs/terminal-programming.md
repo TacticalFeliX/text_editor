@@ -80,7 +80,7 @@ In **raw mode**:
 - The terminal does NOT handle backspace, Ctrl+C, etc. Your program handles them.
 - The terminal does NOT echo characters. Your program draws what it wants.
 
-This is what text editors need. When the user presses 'h', cEdit must:
+This is what text editors need. When the user presses 'h', tEdit must:
 1. Immediately receive the byte `'h'`
 2. Insert it into the buffer
 3. Redraw the screen
@@ -323,7 +323,7 @@ display. They always start with `\x1b[` (ESC followed by `[`).
 
 The `[` is called the **CSI** (Control Sequence Introducer).
 
-Here are the sequences cEdit uses:
+Here are the sequences tEdit uses:
 
 ### Cursor Control
 

@@ -1,219 +1,294 @@
-# tEdit - A Lightweight Terminal Text Editor in C
+# CEdit - Terminal Text Editor in C
 
-> This is a text editor written in pure C, and is built only for learning purposes.
-
----
-
-## Table of Contents
-
-1. [Project Overview](#project-overview)
-2. [Project Overview](#project-overview)
-3. [Project Overview](#project-overview)
-4. [Project Overview](#project-overview)
-5. [Project Overview](#project-overview)
-6. [Project Overview](#project-overview)
-7. [Project Overview](#project-overview)
-8. [Project Overview](#project-overview)
-9. [Project Overview](#project-overview)
-10. [Project Overview](#project-overview)
-11. [Project Overview](#project-overview)
-12. [Project Overview](#project-overview)
-
----
-
-## Project Overview
-
-**tEdit** is a lightweight, offline, terminal-based text editor written in C.
-It is designed with two goals:
-
-1. **Be a usable editor** - fast startup, small memory footprint, works without a GUI or network.
-2. **Be a complete learning project** - test understanding of program architecture, buffer states, and understanding how editors work at a low level.
+A lightweight terminal-based text editor written in C, supporting file editing, search, undo/redo, syntax highlighting, and efficient buffer management.
 
 ---
 
 ## Features
 
-### File Operations
-- New File
-- Open file by path
-- Save (`Ctrl+S`)
-- Save As 
-- Exit with unsaved-change warning
-
-### Text Editing
-- Insert characters
-- Delete (forward and backward)
-- Multi-line editing
-- Line splitting (Enter)
-- Line merging (Backspace at start of line)
-
-### Navigation
-- Arrow keys (Up, Down, Left, Right)
-- Home / End (beginning and end of line)
-- Page Up / Page Down
-- Go to line (`Ctrl+G`)
-
-### Status Bar
-- Current filename
-- Modified indicator (`[+]` when unsaved changes exist)
-- Current line and column number
-- Total line count
-
-### Smart Editing
-- **Auto bracket completion**: `(` → `()`, `[` → `[]`, `{` → `{}`, `"` → `""`, `'` → `''`
-- **Smart indentation**: preserves and increases indent level after `{`, `if`, `for`, `while`
-- **Configurable tab size**: 2, 4, or 8 spaces (default: 4)
-
-### Undo / Redo
-- Full undo history (`Ctrl+Z`)
-- Full redo history (`Ctrl+Y`)
-- Handles inserts, deletes, and multi-line operations
-
-### Search
-- Find (`Ctrl+F`)
-- Find Next (`Ctrl+N`)
-- Find Previous (`Ctrl+P`)
-- Optional replace (`Ctrl+R`)
-
---- 
-
-## Architecture Overview
-
-```
-┌─────────────────────────────────────────────────────────┐
-│                      main.c                             │
-│         Entry point. Initialises all subsystems.        │
-└──────────────────────┬──────────────────────────────────┘
-                       │
-         ┌─────────────▼──────────────┐
-         │         editor.c           │
-         │  Central coordinator.      │
-         │  Owns the event loop.      │
-         │  Dispatches key events.    │
-         └──┬──────┬──────┬──────┬────┘
-            │      │      │      │
-    ┌───────▼──┐ ┌─▼────┐ ┌▼────▼──┐ ┌───────┐
-    │terminal.c│ │buf.c │ │fileio.c│ │undo.c │
-    │          │ │      │ │        │ │       │
-    │Raw mode  │ │Array │ │open    │ │stack  │
-    │Key decode│ │of    │ │save    │ │based  │
-    │Screen    │ │lines │ │save as │ │undo   │
-    │rendering │ │      │ │        │ │redo   │
-    └──────────┘ └──────┘ └────────┘ └───┬───┘
-                                         │
-                                   ┌─────▼──────┐
-                                   │  search.c  │
-                                   │            │
-                                   │ find/next/ │
-                                   │ previous   │
-                                   └────────────┘
-                                   
-```
-Data flows in one direction: **key event → editor → buffer mutation → screen redraw**.
-
----
-
-## Quick Start
-```bash
-
-cd text-editor
-gcc -std=c99 -Wall -Wextra -Wpedantic -Werror -O2 -DNDEBUG -o tedit src/*.c
-./tedit <file path (optional)>
-```
-
----
-
-## Dependencies
-tEdit has no build system and only dependencies include C99 compiler and the POSIX headers, everything compiles with a single `gcc` compiler
-
----
-
-## Run Instructions
-
-```bash
-# Open a new empty buffer
-./tedit
-
-# Open an existing file
-./tedit myfile.c
-
-# Open with a specific tab size
-./tedit --tabsize 2 myfile.c
-```
-
----
-
-## Usage Guide
-
-When you open tEdit, you will see:
-
-- A **text area** occupying most of the terminal
-- A **title bar** at the top showing the filename
-- A **status bar** at the bottom showing position and file state
-
-Start typing immediately. The editor is always in insert mode (there are no modal states like Vim).
-
-**To open a file from inside the editor:** `Ctrl+O`
-**To save:** `Ctrl+S`
-**To quit:** `Ctrl+Q` (you will be warned if there are unsaved changes)
-
----
-
-## Keyboard Shortcuts
-
-| Key             | Action                          |
-|-----------------|---------------------------------|
-| `Ctrl+S`        | Save                            |
-| `Ctrl+O`        | Open file                       |
-| `Ctrl+Q`        | Quit                            |
-| `Ctrl+Z`        | Undo                            |
-| `Ctrl+Y`        | Redo                            |
-| `Ctrl+F`        | Find                            |
-| `Ctrl+N`        | Find next                       |
-| `Ctrl+P`        | Find previous                   |
-| `Ctrl+G`        | Go to line                      |
-| `Ctrl+R`        | Replace                         |
-| `Home`          | Move to start of line           |
-| `End`           | Move to end of line             |
-| `Page Up`       | Scroll up one screen            |
-| `Page Down`     | Scroll down one screen          |
-| `Arrow keys`    | Move cursor                     |
-| `Enter`         | New line (with smart indent)    |
-| `Tab`           | Insert spaces (configurable)    |
-| `Backspace`     | Delete character before cursor  |
-| `Delete`        | Delete character after cursor   |
+- Terminal-based text editing
+- File open/save support
+- Undo/Redo
+- Search functionality
+- Efficient text buffer
+- Cross-platform C99 implementation
 
 ---
 
 ## Project Structure
 
 ```
-text-editor/
+text_editor/
+├── docs/
+│   ├── architecture.md
+│   ├── buffer-design.md
+│   ├── editor-design.md
+│   ├── terminal-programming.md
+│   └── undo-redo.md
+|
+├── src/
+│   ├── main.c
+│   ├── editor.c
+│   ├── editor.h
+│   ├── buffer.c
+│   ├── buffer.h
+│   ├── fileio.c
+│   ├── fileio.h
+│   ├── search.c
+│   ├── search.h
+│   ├── terminal.c
+│   ├── terminal.h
+│   ├── undo.c
+│   └── undo.h
 │
-├── src/                    # All C source and header files
-│   ├── main.c              # Entry point
-│   ├── editor.c / .h       # Central editor state and event loop
-│   ├── buffer.c / .h       # Text buffer (array of lines)
-│   ├── terminal.c / .h     # Raw mode, rendering, key decode
-│   ├── fileio.c / .h       # File open, save, save as
-│   ├── undo.c / .h         # Undo/redo stack
-│   └── search.c / .h       # Find / replace
-│
-├── docs/                   # Design and learning documentation
-│   ├── architecture.md     # Full system architecture
-│   ├── editor-design.md    # Editor state machine design
-│   ├── buffer-design.md    # Buffer data structure analysis
-│   ├── terminal-programming.md  # How terminals work
-│   └── undo-redo.md        # Undo/redo system design
-│
-├── tests/                  # Unit tests
-│   ├── test_buffer.c
-│   ├── test_undo.c
-│   └── test_search.c
-│
-├── examples/               # Example files to open and test
-│
-└── README.md               # This file
+├── examples/
+│   └── hello.c
+└── README.md
 ```
 
+---
 
+# Requirements
+
+## Windows
+
+Recommended:
+
+- MSYS2 (UCRT64)
+- GCC 14+
+- Windows 10/11
+
+Download MSYS2:
+
+https://www.msys2.org/
+
+After installation, install GCC:
+
+```bash
+pacman -Syu
+pacman -S mingw-w64-ucrt-x86_64-gcc
+```
+
+---
+
+## Verify Installation
+
+Open Command Prompt or PowerShell and run:
+
+```bash
+gcc --version
+```
+
+Expected output:
+
+```
+gcc (Rev2, Built by MSYS2 project) 14.x.x
+```
+
+---
+
+# Important Windows PATH Configuration
+
+Make sure the following directory is added to your **PATH** environment variable:
+
+```
+C:\msys64\ucrt64\bin
+```
+
+Verify:
+
+```cmd
+where gcc
+```
+
+Expected:
+
+```
+C:\msys64\ucrt64\bin\gcc.exe
+```
+
+---
+
+# Building the Project
+
+## Windows (Command Prompt)
+
+Compile using:
+
+```cmd
+gcc -std=c99 -Wall -Wextra -Wpedantic -Werror -O2 -DNDEBUG -o cedit.exe ^
+src\main.c ^
+src\buffer.c ^
+src\editor.c ^
+src\fileio.c ^
+src\search.c ^
+src\terminal.c ^
+src\undo.c
+```
+
+Alternatively, on a single line:
+
+```cmd
+gcc -std=c99 -Wall -Wextra -Wpedantic -Werror -O2 -DNDEBUG -o cedit.exe src\main.c src\buffer.c src\editor.c src\fileio.c src\search.c src\terminal.c src\undo.c
+```
+
+---
+
+## Windows (PowerShell)
+
+PowerShell does **not** expand wildcards (`*.c`) in the same way as Bash.
+
+Either compile by listing all files explicitly:
+
+```powershell
+gcc -std=c99 -Wall -Wextra -Wpedantic -Werror -O2 -DNDEBUG -o cedit.exe `
+src\main.c `
+src\buffer.c `
+src\editor.c `
+src\fileio.c `
+src\search.c `
+src\terminal.c `
+src\undo.c
+```
+
+or automatically expand all source files:
+
+```powershell
+gcc -std=c99 -Wall -Wextra -Wpedantic -Werror -O2 -DNDEBUG `
+-o cedit.exe `
+(Get-ChildItem src -Filter *.c | ForEach-Object { $_.FullName })
+```
+
+---
+
+## Linux / macOS
+
+```bash
+gcc -std=c99 -Wall -Wextra -Wpedantic -Werror -O2 -DNDEBUG -o cedit src/*.c
+```
+
+---
+
+# Running
+
+## Windows
+
+```cmd
+cedit.exe
+```
+
+## Linux
+
+```bash
+./cedit
+```
+
+---
+
+# Cleaning
+
+Windows:
+
+```cmd
+del cedit.exe
+```
+
+Linux:
+
+```bash
+rm cedit
+```
+
+---
+
+# Compiler Flags
+
+| Flag | Purpose |
+|-------|---------|
+| `-std=c99` | Compile as C99 |
+| `-Wall` | Enable common warnings |
+| `-Wextra` | Enable additional warnings |
+| `-Wpedantic` | Strict ISO C compliance |
+| `-Werror` | Treat warnings as errors |
+| `-O2` | Optimize generated code |
+| `-DNDEBUG` | Disable assertions |
+
+---
+
+# Common Issues
+
+## gcc is not recognized
+
+```
+'gcc' is not recognized as an internal or external command
+```
+
+### Solution
+
+Ensure
+
+```
+C:\msys64\ucrt64\bin
+```
+
+is included in your PATH.
+
+Verify:
+
+```cmd
+where gcc
+```
+
+---
+
+## Wildcard Error
+
+```
+cc1.exe: fatal error: src\*.c: Invalid argument
+```
+
+This occurs because some Windows shells do not expand `*.c` automatically.
+
+Compile by listing each source file explicitly or use the PowerShell command shown above.
+
+---
+
+## Undefined Reference Errors
+
+Example:
+
+```
+undefined reference to 'editor_init'
+```
+
+This happens when compiling only `main.c`.
+
+Compile **all** source files together.
+
+---
+
+## Unsupported 16-bit Application
+
+This usually indicates an invalid executable was produced due to an incorrect build process or incomplete compilation.
+
+Delete the old executable and rebuild using the commands provided above.
+
+---
+
+# Development
+
+Whenever new source files are added under `src/`, include them in the compilation command.
+
+For larger projects, using a Makefile or CMake is recommended.
+
+---
+
+# Future Improvements
+
+- Makefile support
+- CMake support
+- Windows package
+- Syntax highlighting
+- Multiple buffers
+- Plugin support
+- Clipboard integration
