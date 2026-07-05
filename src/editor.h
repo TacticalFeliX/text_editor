@@ -1,5 +1,4 @@
 
-
 #ifndef CEDIT_EDITOR_H
 #define CEDIT_EDITOR_H
 
@@ -116,4 +115,4 @@ void editor_do_goto_line(EditorState *state);
 
 void editor_set_status(EditorState *state, const char *fmt, ...);
 
-#endif /* CEDIT_EDITOR_H */
+#endif
