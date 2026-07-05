@@ -131,7 +131,7 @@ Buffer *buffer_new(void)
     buf->line_count      = 1;
 
     return buf;
-};
+}
 
 /*
 Purpose:
@@ -153,7 +153,7 @@ void buffer_free(Buffer *buf)
     free(buf->lines);
     free(buf->line_lengths);
     free(buf);
-};
+}
 
 /*--------------------char ops---------------------*/
 
@@ -192,7 +192,7 @@ int buffer_insert_char(Buffer *buf, int row, int col, char c)
     buf->line_lengths[row] = new_len;
     buf->modified = 1;
     return 0;
-};
+}
 
 /*
 Purpose:
@@ -222,7 +222,7 @@ int buffer_delete_char(Buffer *buf, int row, int col)
     buf->modified = 1;
 
     return 0;
-};
+}
 
 /*---------------------line ops---------------------*/
 
@@ -274,7 +274,7 @@ int buffer_split_line(Buffer *buf, int row, int col)
     buf->modified=1;
     return 0;
 
-};
+}
 
 /*
 Purpose:
@@ -316,7 +316,7 @@ int buffer_merge_lines(Buffer *buf, int row)
     buf->line_count--;
     buf->modified=1;
     return 0;
-};
+}
 
 /*
 Purpose:
@@ -362,7 +362,7 @@ int buffer_insert_line(Buffer *buf, int row, const char *text)
     buf->modified = 1;
 
     return 0;
-};
+}
 
 /*
 Purpose:
@@ -405,7 +405,7 @@ int buffer_delete_line(Buffer *buf, int row)
     buf->line_count--;
     buf->modified = 1;
     return 0;
-};
+}
 
 /*-------------------------query ops---------------------------*/
 
@@ -424,7 +424,7 @@ const char *buffer_get_line(Buffer *buf, int row)
         return "";
     }
     return buf->lines[row];
-};
+}
 
 /*
 Purpose:
@@ -441,7 +441,7 @@ int buffer_get_line_length(Buffer *buf, int row)
         return -1;
     }
     return buf->line_lengths[row];
-};
+}
 
 /*
 Purpose:
@@ -454,7 +454,7 @@ Returns:
 int buffer_get_line_count(Buffer *buf)
 {
     return buf->line_count;
-};
+}
 
 /*
 Purpose:
@@ -467,7 +467,7 @@ Returns:
 int buffer_is_modified(Buffer *buf)
 {
     return buf->modified;
-};
+}
 
 //state control
 
@@ -483,7 +483,7 @@ Returns:
 void buffer_set_modified(Buffer *buf, int value)
 {
     buf->modified = value;
-};
+}
 
 /*
 Purpose:
@@ -505,7 +505,7 @@ void buffer_clear(Buffer *buf)
 
     buf->line_count=1;
     buf->modified = 0;
-};
+}
 
 /*
 Purpose:
@@ -528,7 +528,7 @@ int buffer_replace_line(Buffer *buf, int row, const char *text)
 
     int   new_len  = (int)strlen(text);
     char *new_line = _strdup_len(text, new_len);
-    
+
     if (new_line == NULL){
         return -1;
     }
@@ -539,4 +539,4 @@ int buffer_replace_line(Buffer *buf, int row, const char *text)
     buf->modified          = 1;
 
     return 0;
-};
+}
