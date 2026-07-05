@@ -411,72 +411,132 @@ int buffer_delete_line(Buffer *buf, int row)
 
 /*
 Purpose:
-
+    get the line at row 'row'
 Parameters:
-
+    buf
+    row
 Returns:
-
+    returns a read only pointer to text of line row
 */
-const char *buffer_get_line(Buffer *buf, int row);
+const char *buffer_get_line(Buffer *buf, int row)
+{
+    if (row < 0 || row >= buf->line_count){
+        return "";
+    }
+    return buf->lines[row];
+};
 
 /*
 Purpose:
-
+    get length of line 'row'
 Parameters:
-
+    buf
+    row
 Returns:
-
+    returns cached length of line row
 */
-int buffer_get_line_length(Buffer *buf, int row);
+int buffer_get_line_length(Buffer *buf, int row)
+{
+    if (row < 0 || row >= buf->line_count){
+        return -1;
+    }
+    return buf->line_lengths[row];
+};
 
 /*
 Purpose:
-
+    get line count
 Parameters:
-
+    buf
 Returns:
-
+    returns count
 */
-int buffer_get_line_count(Buffer *buf);
+int buffer_get_line_count(Buffer *buf)
+{
+    return buf->line_count;
+};
 
 /*
 Purpose:
-
+    is the buffer modified or not
 Parameters:
-
+    buf
 Returns:
-
+    0/1
 */
-int buffer_is_modified(Buffer *buf);
+int buffer_is_modified(Buffer *buf)
+{
+    return buf->modified;
+};
 
 //state control
 
 /*
 Purpose:
-
+    set/clear mod tag
 Parameters:
-
+    buf
+    value to set
 Returns:
-
+    none
 */
-void buffer_set_modified(Buffer *buf, int value);
+void buffer_set_modified(Buffer *buf, int value)
+{
+    buf->modified = value;
+};
 
 /*
 Purpose:
-
+    removes all lines and reset to single empty line
 Parameters:
-
+    buf
 Returns:
-
+    none
 */
-void buffer_clear(Buffer *buf);
+void buffer_clear(Buffer *buf)
+{
+    int i;
+    for(i = 0;i<buf->line_count;i++){
+        free(buf->lines[i]);
+    }
+
+    buf->lines[0]= _strdup_len("",0);
+    buf->line_lengths[0]=0;
+
+    buf->line_count=1;
+    buf->modified = 0;
+};
 
 /*
 Purpose:
-
+    replace line at 'row' with text
 Parameters:
-
+    buf
+    row
+    text
 Returns:
-
+    0,-1
 */
-int buffer_replace_line(Buffer *buf, int row, const char *text);
+int buffer_replace_line(Buffer *buf, int row, const char *text)
+{
+    if (row < 0 || row >= buf->line_count){
+        return -1;
+    }
+    if (text == NULL){
+        text = "";
+    }
+
+    int   new_len  = (int)strlen(text);
+    char *new_line = _strdup_len(text, new_len);
+    
+    if (new_line == NULL){
+        return -1;
+    }
+
+    free(buf->lines[row]);
+    buf->lines[row]        = new_line;
+    buf->line_lengths[row] = new_len;
+    buf->modified          = 1;
+
+    return 0;
+};
