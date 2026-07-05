@@ -145,7 +145,7 @@ tEdit has no build system and only dependencies include C99 compiler and the POS
 
 ## Usage Guide
 
-When you open cEdit, you will see:
+When you open tEdit, you will see:
 
 - A **text area** occupying most of the terminal
 - A **title bar** at the top showing the filename
