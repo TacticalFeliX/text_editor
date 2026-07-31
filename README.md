@@ -1,4 +1,4 @@
-# CEdit - Terminal Text Editor in C
+# tEdit - Terminal Text Editor in C
 
 A lightweight terminal-based text editor written in C, supporting file editing, search, undo/redo, syntax highlighting, and efficient buffer management.
 
